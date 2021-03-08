@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import tkinter as tk
+from tkinter import messagebox as mb
 import numpy.random as perm
 
 class Frame(tk.Frame):
@@ -31,11 +32,23 @@ class Frame(tk.Frame):
 
     def shuffle(self):
         self.buttons = perm.permutation([perm.permutation(i).tolist() for i in self.buttons]).tolist()
+        ''' #this aint working
+        #TODO: Locate problem for some understanding
         for r in self.buttons:
             for i in r:
                 if i:
                     i.grid(row = i.grid_info()['row'], column = i.grid_info()['column'])
+        '''
+        for rownum, r in enumerate(self.buttons):
+            for colnum, i in enumerate(r):
+                if i:
+                    i.grid(row = rownum, column = colnum)
         
+    def checkWin(self):
+        winconfig = [[['None', '1', '2', '3'], ['4', '5', '6', '7'], ['8', '9', '10', '11'], ['12', '13', '14', '15']],
+                    [[ '1', '2', '3','4'], ['5', '6', '7','8'], ['9', '10', '11','12'], ['13', '14', '15', 'None']]]
+        if [[i['text'] if i else 'None' for i in j] for j in self.buttons] in winconfig:
+            mb.showinfo('Win!', 'Congratulations!\nYou won!\nNow you can either restart or keep playing!')
 
     def genShiftButtons(parent, button):
         def shiftButtons():
@@ -68,9 +81,9 @@ class Frame(tk.Frame):
                 for colnum, i in enumerate(r):
                     if i:
                         i.grid(row = rownum, column = colnum)
+            parent.checkWin()
 
         return shiftButtons
-
 
 
 #def __main__():
