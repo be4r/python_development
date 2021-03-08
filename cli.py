@@ -2,7 +2,7 @@
 
 '''
 # patched: 
-    line 21,30 range(, rownum + 1)
+    line 21,30 range(, rownum + direction)
 
 '''
 
