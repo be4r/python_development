@@ -8,10 +8,11 @@ Author: be4r at cid33@mail.ru
 
 
 import tkinter as tk
+import tkinter.font as tkf
 from tkinter import messagebox as mb
 import numpy.random as perm
 
-class Frame(tk.Frame): # pylint: disable=too-many-ancestors
+class Frame(tk.Tk): # pylint: disable=too-many-ancestors
     '''
     Pyatnashki game window
     '''
@@ -20,6 +21,11 @@ class Frame(tk.Frame): # pylint: disable=too-many-ancestors
     def __init__(self):
         'constructor'
         super().__init__()
+        #self.bind("<Configure>", self.on_resize)
+        for i in range(4):
+            self.rowconfigure(i, weight=1)
+            self.columnconfigure(i, weight=1)
+                        
         self.initButtons((4,4))
 
     def initButtons(self, fieldSize):
@@ -27,6 +33,7 @@ class Frame(tk.Frame): # pylint: disable=too-many-ancestors
         Creates all buttons, draws them for the first time.
         Called in constructor.
         '''
+        fnt = tkf.Font(family='Helvetica', size=36, weight='bold')
         for i in range(fieldSize[0]):
             row = []
             for j in range(fieldSize[1]):
@@ -35,14 +42,16 @@ class Frame(tk.Frame): # pylint: disable=too-many-ancestors
                 if (i,j) == (0,0):
                     row[j] = None
                 else:
-                    row[j].configure(command = self.genShiftButtons(row[j]))
-                    row[j].grid(row = i, column = j)
+                    row[j].configure(command = self.genShiftButtons(row[j]), activebackground = "#ebac0c", bg = "#cb8c0c", font=fnt)
+                    row[j].grid(row = i, column = j, sticky=tk.N+tk.E+tk.S+tk.W)
                 #add onclick here
             self.buttons.append(row)
         self.exit = tk.Button(text = 'EXIT', command = self.quit)
-        self.shuffle = tk.Button(text = 'SHUFFLE!', command = self.shuffleField)
-        self.exit.grid(column = 0, row = 4, columnspan = 2)
-        self.shuffle.grid(column = 2, row = 4, columnspan = 2)
+        self.shuffle = tk.Button(text = 'NEW', command = self.shuffleField)
+        self.exit.grid(column = 0, row = 4, columnspan = 2, sticky=tk.N+tk.E+tk.S+tk.W)
+        self.shuffle.grid(column = 2, row = 4, columnspan = 2, sticky=tk.N+tk.E+tk.S+tk.W)
+        #initial shuffle
+        self.shuffleField()
 
     def shuffleField(self):
         '''
@@ -93,8 +102,9 @@ class Frame(tk.Frame): # pylint: disable=too-many-ancestors
                 pos = row.index(None)
                 #can shift row
                 direction = 1 if pos < colnum else -1
-                print('none in row')
-                print('moving from {} to {} in dir {}'.format(pos,colnum,direction) )
+                #debug print on move; TODO: add -debug flag to env?
+                #print('none in row')
+                #print('moving from {} to {} in dir {}'.format(pos,colnum,direction) )
                 for i in range(pos + direction, colnum + direction, direction):
                     self.buttons[rownum][i - direction] = self.buttons[rownum][i]
                 self.buttons[rownum][colnum] = None
@@ -102,8 +112,8 @@ class Frame(tk.Frame): # pylint: disable=too-many-ancestors
                 pos = col.index(None)
                 #can shift column
                 direction = 1 if pos < rownum else -1
-                print('none in col')
-                print('moving from {} to {} in dir {}'.format(pos,rownum,direction) )
+                #print('none in col')
+                #print('moving from {} to {} in dir {}'.format(pos,rownum,direction) )
                 for i in range(pos + direction, rownum + direction, direction):
                     self.buttons[i - direction][colnum] = self.buttons[i][colnum]
                 self.buttons[rownum][colnum] = None
