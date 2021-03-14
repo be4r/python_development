@@ -25,7 +25,7 @@ class Frame(tk.Tk): # pylint: disable=too-many-ancestors
         for i in range(4):
             self.rowconfigure(i, weight=1)
             self.columnconfigure(i, weight=1)
-                        
+        self.minsize(235,245)
         self.initButtons((4,4))
 
     def initButtons(self, fieldSize):
@@ -33,7 +33,7 @@ class Frame(tk.Tk): # pylint: disable=too-many-ancestors
         Creates all buttons, draws them for the first time.
         Called in constructor.
         '''
-        fnt = tkf.Font(family='Helvetica', size=36, weight='bold')
+        fnt = tkf.Font(family='Courier', size=32, weight='bold')
         for i in range(fieldSize[0]):
             row = []
             for j in range(fieldSize[1]):
@@ -42,7 +42,8 @@ class Frame(tk.Tk): # pylint: disable=too-many-ancestors
                 if (i,j) == (0,0):
                     row[j] = None
                 else:
-                    row[j].configure(command = self.genShiftButtons(row[j]), activebackground = "#ebac0c", bg = "#cb8c0c", font=fnt)
+                    row[j].configure(command = self.genShiftButtons(row[j]),
+                    	activebackground = "#ebac0c", bg = "#cb8c0c", font=fnt)
                     row[j].grid(row = i, column = j, sticky=tk.N+tk.E+tk.S+tk.W)
                 #add onclick here
             self.buttons.append(row)
@@ -57,20 +58,37 @@ class Frame(tk.Tk): # pylint: disable=too-many-ancestors
         '''
         Shuffles all buttons in random order(obtained using numpy)
         Called on corresponding button press
+
+        Though chance of instawin is 2/16! ~ 10461394944000,
+        let them have it and be proud of their luckyness when they get it
         '''
-        self.buttons = perm.permutation([perm.permutation(i).tolist() for i in self.buttons]).tolist() # pylint: disable=line-too-long
-        ''' #this version aint working
-        #TODO: Locate problem for some understanding
-        for r in self.buttons:
-            for i in r:
-                if i:
-                    i.grid(row = i.grid_info()['row'], column = i.grid_info()['column'])
-        '''
+        self.buttons = perm.permutation([perm.permutation(i).tolist() for i in self.buttons]).tolist()
         for rownum, r in enumerate(self.buttons):
             for colnum, i in enumerate(r):
                 if i:
                     i.grid(row = rownum, column = colnum)
-        self.checkWin()
+        if not self.isWinnable():
+            self.shuffleField()
+
+    def isWinnable(self):
+        '''
+        Checks if buttons can be reorderer into win-combination without swaping them
+        Takes 256 comporation operations
+        '''
+        chaosmeter = 0
+        for selfrownum, row in enumerate(self.buttons):
+            for selfcolnum, button in enumerate(row):
+                n_i = 0
+                if not button:
+                    chaosmeter += selfrownum
+                    continue
+                for rownum, i in enumerate(self.buttons):
+                    for colnum, j in enumerate(i):
+                        if button and j and (selfrownum < rownum or
+                        	(selfrownum == rownum and selfcolnum < colnum)) and (int(button['text']) > int(j['text'])):
+                            n_i += 1
+                chaosmeter += n_i
+        return chaosmeter % 2 == 1
 
     def checkWin(self):
         '''
