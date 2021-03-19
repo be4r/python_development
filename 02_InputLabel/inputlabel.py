@@ -4,8 +4,6 @@ import tkinter as tk
 import tkinter.font as tkf
 
 #TODO: focus
-#TODO: move keypress code to class
-#TODO: change self.l to self, self to self.master
 
 
 
@@ -19,35 +17,26 @@ class InputLabel(tk.Label):
 		self.cursor.place(x=0, y=0)
 		fnt = tkf.Font(family='Monospace', weight = 'bold', size=32)
 		self.configure(font = fnt)
-		
+		self.bindKeypressListener()
 
-class Frame(tk.Tk):
-	def __init__(self):
-		super().__init__()
-		self.createWidgets()
-		def f(e):
-			if self.l.pos > 0 and e.keycode == 22:
-				self.l.cursor.place(x = int(self.l.cursor.place_info()['x']) - 26)
-				self.l.configure(text = self.l['text'][:self.l.pos - 1] + self.l['text'][self.l.pos:])
-				self.l.pos -= 1
+	def bindKeypressListener(self):
+		def eventProcess(e):
+			if self.pos > 0 and e.keycode == 22:
+				self.cursor.place(x = int(self.cursor.place_info()['x']) - 26)
+				self.configure(text = self['text'][:self.pos - 1] + self['text'][self.pos:])
+				self.pos -= 1
 			#elif 0x21 < e.keycode < 0x7e: 
-			elif self.l.pos > 0 and e.keycode == 113:
-				self.l.cursor.place(x = int(self.l.cursor.place_info()['x']) - 26)
-				self.l.pos -= 1
-			elif self.l.pos <= len(self.l['text']) and (e.char or e.keycode == 114):
-				self.l.configure(text = self.l['text'][:self.l.pos] + e.char + self.l['text'][self.l.pos:])
-				if self.l.pos < len(self.l['text']):
-					self.l.pos += 1
-					self.l.cursor.place(x = int(self.l.cursor.place_info()['x']) + 26)
-		self.bind('<KeyPress>', f)
-
-	def createWidgets(self):
-		self.l = InputLabel(text = 'label1')
-		self.exit = tk.Button(text = 'Exit', command = self.quit)
-		self.l.grid()
-		self.exit.grid()
-		self.grid()
-
-
-f = Frame()
-f.mainloop()
+			elif self.pos > 0 and e.keycode == 113:
+				self.cursor.place(x = int(self.cursor.place_info()['x']) - 26)
+				self.pos -= 1
+			elif e.keycode == 119:
+				if self.pos < len(self['text']):
+					self.configure(text = self['text'][:self.pos] + self['text'][self.pos + 1:])
+			elif self.pos <= len(self['text']) and (e.char or e.keycode == 114):
+				if e.char in ['\r', '\x08']:
+					return
+				self.configure(text = self['text'][:self.pos] + e.char + self['text'][self.pos:])
+				if self.pos < len(self['text']):
+					self.pos += 1
+					self.cursor.place(x = int(self.cursor.place_info()['x']) + 26)
+		self.border.master.bind('<KeyPress>', eventProcess)
